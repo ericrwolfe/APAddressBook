@@ -9,6 +9,7 @@
 #import <AddressBook/AddressBook.h>
 #import "APAddressBook.h"
 #import "APContact.h"
+#import "APPhoneWithLabel.h"
 
 void APAddressBookExternalChangeCallback(ABAddressBookRef addressBookRef, CFDictionaryRef info,
                                          void *context);
@@ -113,6 +114,7 @@ void APAddressBookExternalChangeCallback(ABAddressBookRef addressBookRef, CFDict
         NSError *error = nil;
         if (granted)
         {
+            NSMutableSet *included = [[NSMutableSet alloc] init];
             __block CFArrayRef peopleArrayRef;
             peopleArrayRef = ABAddressBookCopyArrayOfAllPeople(self.addressBook);
             NSUInteger contactCount = (NSUInteger)CFArrayGetCount(peopleArrayRef);
@@ -124,7 +126,53 @@ void APAddressBookExternalChangeCallback(ABAddressBookRef addressBookRef, CFDict
                                                                 fieldMask:fieldMask];
                 if (!filterBlock || filterBlock(contact))
                 {
+                    if ([included containsObject:contact.recordID]) {
+                        continue;
+                    }
+                    
+                    CFArrayRef linkedPeopleArrayRef = ABPersonCopyArrayOfAllLinkedPeople(recordRef);
+                    NSUInteger linkedPeopleCount = CFArrayGetCount(linkedPeopleArrayRef);
+                    for (NSUInteger j = 0; j < linkedPeopleCount; j++) {
+                        ABRecordRef linkedRecordRef = CFArrayGetValueAtIndex(linkedPeopleArrayRef, j);
+                        
+                        // Merge phones of this linked contact with contact
+                        APContact *linkedContact = [[APContact alloc] initWithRecordRef:linkedRecordRef fieldMask:fieldMask];
+                        NSMutableArray *phones = [contact.phones mutableCopy];
+                        for (NSString *phone in linkedContact.phones) {
+                            if ([phones indexOfObject:phone] == NSNotFound) {
+                                [phones addObject:phone];
+                            }
+                        }
+                        contact.phones = [phones copy];
+                        
+                        
+                        // Merge phonesWithLabels of this linked contact with contact
+                        
+                        NSMutableArray *phonesWithLabels = [contact.phonesWithLabels mutableCopy];
+                        
+                        for (APPhoneWithLabel *phoneWithLabel in linkedContact.phonesWithLabels) {
+                            
+                            BOOL isDup = NO;
+                            for (APPhoneWithLabel *currentPhonesWithLabel in phonesWithLabels) {
+                                if ([currentPhonesWithLabel.phone isEqualToString:phoneWithLabel.phone]) {
+                                    isDup = YES;
+                                    break;
+                                }
+                            }
+                            
+                            if (!isDup) {
+                                [phonesWithLabels addObject:phoneWithLabel];
+                            }
+                        }
+                        contact.phonesWithLabels = [phonesWithLabels copy];
+                        
+                        NSNumber *linkedRecordID = [NSNumber numberWithInteger:ABRecordGetRecordID(linkedRecordRef)];
+                        [included addObject:linkedRecordID];
+                    }
+                    
                     [contacts addObject:contact];
+                    
+                    CFRelease(linkedPeopleArrayRef);
                 }
             }
             [contacts sortUsingDescriptors:descriptors];

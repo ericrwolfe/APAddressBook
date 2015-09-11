@@ -76,10 +76,9 @@
             }
             _addresses = addresses.copy;
         }
-        if (fieldMask & APContactFieldRecordID)
-        {
-            _recordID = @(ABRecordGetRecordID(recordRef));
-        }
+
+        _recordID = @(ABRecordGetRecordID(recordRef));
+        
         if (fieldMask & APContactFieldCreationDate)
         {
             _creationDate = [self dateProperty:kABPersonCreationDateProperty fromRecord:recordRef];

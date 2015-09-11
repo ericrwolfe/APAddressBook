@@ -20,8 +20,8 @@
 @property (nonatomic, readonly) NSString *compositeName;
 @property (nonatomic, readonly) NSString *company;
 @property (nonatomic, readonly) NSString *jobTitle;
-@property (nonatomic, readonly) NSArray *phones;
-@property (nonatomic, readonly) NSArray *phonesWithLabels;
+@property (nonatomic, strong) NSArray *phones;
+@property (nonatomic, strong) NSArray *phonesWithLabels;
 @property (nonatomic, readonly) NSArray *emails;
 @property (nonatomic, readonly) NSArray *addresses;
 @property (nonatomic, readonly) UIImage *photo;
