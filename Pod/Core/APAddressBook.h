@@ -29,6 +29,6 @@
 - (void)startObserveChangesWithCallback:(void (^)())callback;
 - (void)stopObserveChanges;
 
-- (APContact *)getContactByRecordID:(NSNumber *)recordID;
+- (APContact *)getContactByRecordID:(NSNumber *)recordID fieldMask:(APContactField)fieldMask;
 
 @end

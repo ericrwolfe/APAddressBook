@@ -212,13 +212,13 @@ void APAddressBookExternalChangeCallback(ABAddressBookRef addressBookRef, CFDict
     }
 }
 
-- (APContact *)getContactByRecordID:(NSNumber *)recordID
+- (APContact *)getContactByRecordID:(NSNumber *)recordID fieldMask:(APContactField)fieldMask
 {
     APContact *contact = nil;
     ABRecordRef ref = ABAddressBookGetPersonWithRecordID(self.addressBook, recordID.intValue);
     if (ref != NULL)
     {
-        contact = [[APContact alloc] initWithRecordRef:ref fieldMask:self.fieldsMask];
+        contact = [[APContact alloc] initWithRecordRef:ref fieldMask:fieldMask];
     }
     return contact;
 }
